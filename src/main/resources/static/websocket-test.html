@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket STOMP - Notifications en temps réel</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #60a5fa;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        input, select, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        button.danger {
+            background-color: var(--danger);
+        }
+        button.success {
+            background-color: var(--success);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge.disconnected { background: #450a0a; color: #f87171; border: 1px solid #dc2626; }
+        .badge.connected { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+        .badge.connecting { background: #451a03; color: #fbbf24; border: 1px solid #d97706; }
+        pre.log {
+            background: #090d16;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .notif-item {
+            background: #0f172a;
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .notif-item.unread {
+            border-left-color: var(--success);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🚀 Testeur WebSocket & Notifications</h1>
+    <p class="subtitle">Interface interactive pour tester l'authentification JWT, la connexion STOMP et les notifications en temps réel.</p>
+
+    <!-- Étape 1 : Authentification -->
+    <div class="card">
+        <h2>1. Authentification (Génération de Token JWT)</h2>
+        <div class="grid">
+            <div>
+                <label>Email</label>
+                <input type="email" id="email" value="coumba@example.com" />
+            </div>
+            <div>
+                <label>Mot de passe</label>
+                <input type="password" id="password" value="Password123!" />
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="register()">Créer un compte</button>
+            <button onclick="login()" style="background-color: #475569;">Se connecter</button>
+        </div>
+        <div style="margin-top: 16px;">
+            <label>Token JWT obtenu :</label>
+            <textarea id="jwtToken" rows="2" placeholder="Le token apparaîtra ici après connexion..." readonly></textarea>
+            <label>ID Utilisateur :</label>
+            <input type="number" id="userId" value="1" />
+        </div>
+    </div>
+
+    <!-- Étape 2 : Connexion WebSocket -->
+    <div class="card">
+        <h2>
+            2. Connexion WebSocket (STOMP)
+            <span id="wsStatus" class="badge disconnected">DÉCONNECTÉ</span>
+        </h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <button id="btnConnect" onclick="connectWebSocket()" class="success">Se connecter au WebSocket</button>
+            <button id="btnDisconnect" onclick="disconnectWebSocket()" class="danger" disabled>Déconnexion</button>
+            <button onclick="clearLogs()" style="background-color: #334155;">Effacer logs</button>
+        </div>
+        <label>Canal d'abonnement :</label>
+        <input type="text" id="topicChannel" value="/topic/user/1/notifications" readonly />
+        <label>Logs en direct :</label>
+        <pre id="logs" class="log">Prêt pour la connexion...</pre>
+    </div>
+
+    <!-- Étape 3 : Déclenchement de Notification -->
+    <div class="card">
+        <h2>3. Déclencher une notification (Création de Tâche)</h2>
+        <div class="grid">
+            <div>
+                <label>Titre de la tâche</label>
+                <input type="text" id="taskTitle" value="Tester les notifications WebSocket" />
+            </div>
+            <div>
+                <label>ID Assigné (destinataire de la notification)</label>
+                <input type="number" id="taskAssigneeId" value="1" />
+            </div>
+        </div>
+        <button onclick="triggerTaskCreation()">Créer la tâche & Envoyer Notification</button>
+    </div>
+
+    <!-- Liste des notifications reçues -->
+    <div class="card">
+        <h2>4. Notifications reçues en direct</h2>
+        <div id="notificationsList">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">En attente de messages WebSocket...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let stompClient = null;
+
+    function log(message) {
+        const logsEl = document.getElementById('logs');
+        const time = new Date().toLocaleTimeString();
+        logsEl.textContent += `\n[${time}] ${message}`;
+        logsEl.scrollTop = logsEl.scrollHeight;
+    }
+
+    function clearLogs() {
+        document.getElementById('logs').textContent = 'Logs réinitialisés.';
+    }
+
+    async function register() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        log(`Tentative d'enregistrement pour ${email}...`);
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstname: "Coumba",
+                    lastname: "Keita",
+                    email: email,
+                    password: password,
+                    role: "ROLE_USER"
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('jwtToken').value = data.token;
+                document.getElementById('userId').value = data.userId;
+                document.getElementById('taskAssigneeId').value = data.userId;
+                document.getElementById('topicChannel').value = `/topic/user/${data.userId}/notifications`;
+                log(`✅ Compte créé avec succès ! ID: ${data.userId}`);
+            } else {
+                log(`⚠️ Inscription : ${JSON.stringify(data)}`);
+                // Si l'utilisateur existe déjà, tenter le login
+                login();
+            }
+        } catch (e) {
+            log(`❌ Erreur connexion serveur : ${e.message}`);
+        }
+    }
+
+    async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        log(`Connexion en cours pour ${email}...`);
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('jwtToken').value = data.token;
+                document.getElementById('userId').value = data.userId;
+                document.getElementById('taskAssigneeId').value = data.userId;
+                document.getElementById('topicChannel').value = `/topic/user/${data.userId}/notifications`;
+                log(`✅ Connexion réussie ! Utilisateur ID: ${data.userId}`);
+            } else {
+                log(`❌ Échec connexion : ${JSON.stringify(data)}`);
+            }
+        } catch (e) {
+            log(`❌ Erreur : ${e.message}`);
+        }
+    }
+
+    function connectWebSocket() {
+        const token = document.getElementById('jwtToken').value;
+        const userId = document.getElementById('userId').value;
+
+        if (!token) {
+            alert("Veuillez d'abord vous connecter ou créer un compte pour obtenir un token JWT.");
+            return;
+        }
+
+        const statusEl = document.getElementById('wsStatus');
+        statusEl.className = 'badge connecting';
+        statusEl.textContent = 'CONNEXION...';
+        log(`Initialisation de la connexion STOMP vers /ws...`);
+
+        // Utilisation de SockJS pour compatibilité maximale
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = function(str) {
+            // Afficher les trames STOMP de debug
+            console.log(str);
+        };
+
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'token': token
+        };
+
+        stompClient.connect(headers, function (frame) {
+            statusEl.className = 'badge connected';
+            statusEl.textContent = 'CONNECTÉ';
+            document.getElementById('btnConnect').disabled = true;
+            document.getElementById('btnDisconnect').disabled = false;
+            log(`🎉 Connecté au serveur STOMP avec succès !`);
+
+            const topic = `/topic/user/${userId}/notifications`;
+            log(`Abonnement au canal : ${topic}`);
+
+            stompClient.subscribe(topic, function (messageOutput) {
+                log(`📬 Message STOMP reçu sur ${topic} : ${messageOutput.body}`);
+                try {
+                    const notif = JSON.parse(messageOutput.body);
+                    addNotificationToUI(notif);
+                } catch(e) {
+                    addNotificationToUI({ message: messageOutput.body });
+                }
+            });
+        }, function (error) {
+            statusEl.className = 'badge disconnected';
+            statusEl.textContent = 'ERREUR';
+            document.getElementById('btnConnect').disabled = false;
+            document.getElementById('btnDisconnect').disabled = true;
+            log(`❌ Erreur WebSocket STOMP : ${error}`);
+        });
+    }
+
+    function disconnectWebSocket() {
+        if (stompClient !== null) {
+            stompClient.disconnect(function() {
+                const statusEl = document.getElementById('wsStatus');
+                statusEl.className = 'badge disconnected';
+                statusEl.textContent = 'DÉCONNECTÉ';
+                document.getElementById('btnConnect').disabled = false;
+                document.getElementById('btnDisconnect').disabled = true;
+                log('Déconnexion WebSocket effectuée.');
+            });
+        }
+    }
+
+    function addNotificationToUI(notif) {
+        const list = document.getElementById('notificationsList');
+        if (list.querySelector('p')) {
+            list.innerHTML = '';
+        }
+        const div = document.createElement('div');
+        div.className = 'notif-item unread';
+        div.innerHTML = `
+            <strong>🔔 Notification reçue en temps réel :</strong>
+            <p style="margin: 6px 0;">${notif.message || JSON.stringify(notif)}</p>
+            <small style="color: var(--text-muted);">${new Date().toLocaleTimeString()} - ID Tâche : ${notif.taskId || 'N/A'}</small>
+        `;
+        list.prepend(div);
+    }
+
+    async function triggerTaskCreation() {
+        const token = document.getElementById('jwtToken').value;
+        const title = document.getElementById('taskTitle').value;
+        const assigneeId = parseInt(document.getElementById('taskAssigneeId').value);
+
+        if (!token) {
+            alert("Connectez-vous d'abord pour obtenir un token.");
+            return;
+        }
+
+        log(`Envoi de la requête POST /api/tasks pour créer la tâche "${title}"...`);
+
+        try {
+            const res = await fetch('/api/tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    title: title,
+                    description: "Tâche de test générée automatiquement",
+                    projectId: 1,
+                    assigneeIds: [assigneeId]
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                log(`✅ Tâche créée avec succès (ID: ${data.id}) ! La notification a été émise sur le WebSocket.`);
+            } else {
+                log(`❌ Erreur création tâche : ${JSON.stringify(data)}`);
+            }
+        } catch(e) {
+            log(`❌ Erreur réseau : ${e.message}`);
+        }
+    }
+</script>
+</body>
+</html>
