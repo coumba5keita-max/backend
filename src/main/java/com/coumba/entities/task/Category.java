@@ -22,6 +22,12 @@ public class Category {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "color", length = 30)
+    private String color;
+
     // Relation inverse : Tâches associées à cette catégorie
     @JsonIgnore
     @OneToMany(mappedBy = "category")

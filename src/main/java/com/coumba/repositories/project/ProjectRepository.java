@@ -11,5 +11,7 @@ import java.util.Optional;
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByIsArchived(Boolean isArchived);
     boolean existsByName(String name);
+    boolean existsByNameIgnoreCase(String name);
     Optional<Project> findByName(String name);
+    Optional<Project> findByNameIgnoreCase(String name);
 }

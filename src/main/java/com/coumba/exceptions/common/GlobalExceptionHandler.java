@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             com.coumba.exceptions.user.UserNotFoundException.class,
             com.coumba.exceptions.task.TaskNotFoundException.class,
+            com.coumba.exceptions.task.CategoryNotFoundException.class,
             com.coumba.exceptions.project.ProjectNotFoundException.class,
             com.coumba.exceptions.team.TeamNotFoundException.class
     })

@@ -26,7 +26,8 @@ $suites = @(
     @{ File = "03_admin_teams_tests.ps1"; Name = "03. Gestion des Equipes (ROLE_ADMIN)" },
     @{ File = "04_admin_projects_tests.ps1"; Name = "04. Projets & Membres (ROLE_ADMIN)" },
     @{ File = "05_tasks_tests.ps1"; Name = "05. Gestion des Taches" },
-    @{ File = "06_notifications_tests.ps1"; Name = "06. Notifications" }
+    @{ File = "06_notifications_tests.ps1"; Name = "06. Notifications" },
+    @{ File = "07_categories_priorities_tests.ps1"; Name = "07. Categories & Priorites (ROLE_ADMIN)" }
 )
 
 $results = @()

@@ -15,9 +15,10 @@ Dans l'explorateur de fichiers Windows, faites simplement un **double-clic** sur
 | `01_auth_tests.bat` | Authentification, Inscription, Login JWT, Rôles RBAC et validations |
 | `02_admin_users_tests.bat` | **Actions Responsable** : Inviter, modifier, désactiver/réactiver un compte, sécurités anti-lockout |
 | `03_admin_teams_tests.bat` | **Gestion des Équipes** : Création, modification, affectation de membres et suppression |
-| `04_admin_projects_tests.bat` | **Gestion des Projets** : Consultation, création et affectation de collaborateurs |
+| `04_admin_projects_tests.bat` | **Gestion des Projets** : Créer, modifier, archiver/désarchiver, supprimer et affecter des collaborateurs |
 | `05_tasks_tests.bat` | **Gestion des Tâches** : Création, changement de statut, assignation et suppression |
 | `06_notifications_tests.bat` | **Notifications** : Consultation de l'historique et marquage comme lu |
+| `07_categories_priorities_tests.bat` | **Catégories & Priorités** : Configuration des catégories (Bug, Feature, Doc) et priorités (Haute, Moyenne, Basse) |
 
 > 💡 **Astuce** : La fenêtre reste ouverte à la fin de l'exécution pour vous laisser le temps de lire tranquillement les résultats.
 
@@ -37,6 +38,7 @@ Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
 .\04_admin_projects_tests.ps1
 .\05_tasks_tests.ps1
 .\06_notifications_tests.ps1
+.\07_categories_priorities_tests.ps1
 ```
 
 ---
@@ -71,13 +73,16 @@ Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
 - Affectation en bloc des membres (`POST /api/admin/teams/{teamId}/members`)
 - Suppression d'une équipe (`DELETE /api/admin/teams/{id}`)
 
-### 4. `04_admin_projects_tests.ps1` (Projets & Membres)
-- Consultation des projets (`GET /api/projects`)
-- Création d'un projet (`POST /api/projects`)
+### 4. `04_admin_projects_tests.ps1` (Gestion Complète des Projets - ROLE_ADMIN)
+- Création d'un projet (`POST /api/admin/projects`)
+- Consultation de la liste et filtrage par état (`GET /api/admin/projects`, `GET /api/admin/projects?isArchived=true`)
+- Consultation détaillée par ID (`GET /api/admin/projects/{id}`)
+- Modification du nom et de la description (`PUT /api/admin/projects/{id}`)
+- Archivage et désarchivage d'un projet (`PATCH /api/admin/projects/{id}/archive`)
 - Assignation d'un collaborateur au projet (`POST /api/admin/projects/{projectId}/users/{userId}`)
 - Consultation des membres affectés (`GET /api/admin/projects/{projectId}/members`)
 - Retrait d'un membre (`DELETE /api/admin/projects/{projectId}/users/{userId}`)
-- Affectation en bloc des membres d'un projet (`POST /api/admin/projects/{projectId}/members`)
+- Suppression d'un projet avec dissociation sécurisée (`DELETE /api/admin/projects/{id}`)
 
 ### 5. `05_tasks_tests.ps1` (Tâches)
 - Création d'une tâche avec assignation (`POST /api/tasks`)
@@ -90,3 +95,13 @@ Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
 - Protection d'accès aux notifications (403 sans token)
 - Consultation de l'historique des notifications (`GET /api/notifications`)
 - Marquage d'une notification comme lue (`PATCH /api/notifications/{id}/read`)
+
+### 7. `07_categories_priorities_tests.ps1` (Catégories & Priorités de Tâches)
+- Consultation des catégories par défaut auto-initialisées (`GET /api/categories`) : Bug, Feature, Documentation, Amélioration
+- Consultation des priorités configurées avec couleurs et niveaux (`GET /api/categories/priorities`) : Haute, Moyenne, Basse
+- Création d'une nouvelle catégorie par l'administrateur (`POST /api/admin/categories`)
+- Rejet des doublons de catégorie avec contrôle d'intégrité
+- Modification d'une catégorie existante (`PUT /api/admin/categories/{id}`)
+- Sécurité RBAC : Refus d'accès pour les utilisateurs réguliers (403 Forbidden)
+- Suppression d'une catégorie avec détachement sécurisé des tâches associées (`DELETE /api/admin/categories/{id}`)
+
