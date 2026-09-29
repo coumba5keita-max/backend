@@ -171,10 +171,21 @@ public class TaskService {
     }
 
     /**
-     * Suppression d'une tâche.
+     * Suppression d'une tâche avec détachement sécurisé des notifications et assignations.
      */
     @Transactional
     public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+        taskRepository.findById(id).ifPresent(task -> {
+            if (task.getNotifications() != null) {
+                for (Notification notif : task.getNotifications()) {
+                    notif.setTask(null);
+                }
+            }
+            if (task.getAssignees() != null) {
+                task.getAssignees().clear();
+            }
+            taskRepository.delete(task);
+            log.info("Tâche ID {} supprimée avec succès.", id);
+        });
     }
 }

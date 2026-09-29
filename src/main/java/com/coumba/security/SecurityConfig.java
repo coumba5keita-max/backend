@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/websocket-test.html", "/favicon.ico", "/error").permitAll()
                         // Endpoints d'authentification et gestion de projets
                         .requestMatchers("/api/auth/**", "/api/projects/**").permitAll()
+                        // Endpoints d'administration sécurisés réservés strictement au ROLE_ADMIN
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Notifications sécurisées pour ROLE_USER et ROLE_ADMIN
                         .requestMatchers("/api/notifications/**").hasAnyRole("USER", "ADMIN")
                         // Tâches protégées

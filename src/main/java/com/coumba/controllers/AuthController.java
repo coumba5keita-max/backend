@@ -53,25 +53,14 @@ public class AuthController {
 
         User savedUser = userRepository.save(user);
         CustomUserDetails userDetails = new CustomUserDetails(savedUser);
-        String token = jwtService.generateToken(userDetails);
-
-        AuthResponse response = AuthResponse.builder()
-                .token(token)
-                .userId(savedUser.getId())
-                .email(savedUser.getEmail())
-                .role(savedUser.getRole().name())
-                .firstname(savedUser.getFirstname())
-                .lastname(savedUser.getLastname())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Utilisateur " + userDetails.getUsername() + " créé avec succès");
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User user = userDetails.getUser();

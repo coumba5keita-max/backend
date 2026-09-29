@@ -1,0 +1,92 @@
+# 🚀 Guide des Tests API Automatisés (TaskManager Backend)
+
+Ce dossier contient des scripts de test prêts à l'emploi permettant de tester **100% des endpoints de l'API** sans avoir besoin d'ouvrir ou de configurer Postman.
+
+---
+
+## ⚡ Comment lancer les tests ? (2 méthodes)
+
+### Méthode 1 : En 1 Clic (Recommandé pour Windows) 🖱️
+Dans l'explorateur de fichiers Windows, faites simplement un **double-clic** sur le fichier `.bat` de votre choix :
+
+| Fichier à double-cliquer | Fonctionnalité testée |
+| :--- | :--- |
+| **`RUN_ALL_TESTS.bat`** | **Lance la suite complète de TOUS les tests** et affiche un tableau récapitulatif |
+| `01_auth_tests.bat` | Authentification, Inscription, Login JWT, Rôles RBAC et validations |
+| `02_admin_users_tests.bat` | **Actions Responsable** : Inviter, modifier, désactiver/réactiver un compte, sécurités anti-lockout |
+| `03_admin_teams_tests.bat` | **Gestion des Équipes** : Création, modification, affectation de membres et suppression |
+| `04_admin_projects_tests.bat` | **Gestion des Projets** : Consultation, création et affectation de collaborateurs |
+| `05_tasks_tests.bat` | **Gestion des Tâches** : Création, changement de statut, assignation et suppression |
+| `06_notifications_tests.bat` | **Notifications** : Consultation de l'historique et marquage comme lu |
+
+> 💡 **Astuce** : La fenêtre reste ouverte à la fin de l'exécution pour vous laisser le temps de lire tranquillement les résultats.
+
+---
+
+### Méthode 2 : En Ligne de Commande (PowerShell) 💻
+Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
+
+```powershell
+# Pour exécuter TOUS les tests d'un coup
+.\RUN_ALL_TESTS.ps1
+
+# Ou pour tester une fonctionnalité spécifique :
+.\01_auth_tests.ps1
+.\02_admin_users_tests.ps1
+.\03_admin_teams_tests.ps1
+.\04_admin_projects_tests.ps1
+.\05_tasks_tests.ps1
+.\06_notifications_tests.ps1
+```
+
+---
+
+## 🔍 Ce que chaque script vérifie
+
+### 1. `01_auth_tests.ps1` (Authentification)
+- Inscription d'un utilisateur standard (`POST /api/auth/register`)
+- Rejet des doublons d'email (400 Bad Request)
+- Connexion avec identifiants valides et génération du token JWT (`POST /api/auth/login`)
+- Rejet des mauvais mots de passe (401 Unauthorized)
+- Création et connexion avec rôle `ROLE_ADMIN`
+
+### 2. `02_admin_users_tests.ps1` (Comptes Utilisateurs - ROLE_ADMIN)
+- Protection RBAC : Rejet des accès non autorisés (403 Forbidden)
+- Invitation d'un utilisateur avec génération de mot de passe fort (`POST /api/admin/users/invite`)
+- Liste et consultation de tous les comptes (`GET /api/admin/users`, `GET /api/admin/users/{id}`)
+- Modification des données d'un collaborateur (`PUT /api/admin/users/{id}`)
+- Assignation et retrait d'un collaborateur à un projet
+- Suspension / Désactivation d'un compte (`PATCH /api/admin/users/{id}/status` avec `active=false`)
+- **Sécurité** : Rejet immédiat de connexion pour compte désactivé (403 Forbidden)
+- **Sécurité** : Protection anti-verrouillage (un admin ne peut pas désactiver son propre compte)
+- Réactivation d'un compte (`active=true`)
+
+### 3. `03_admin_teams_tests.ps1` (Équipes - ROLE_ADMIN)
+- Création d'une nouvelle équipe (`POST /api/admin/teams`)
+- Liste des équipes et détails (`GET /api/admin/teams`, `GET /api/admin/teams/{id}`)
+- Modification du nom et de la description (`PUT /api/admin/teams/{id}`)
+- Ajout d'un membre à une équipe (`POST /api/admin/teams/{teamId}/users/{userId}`)
+- Consultation des membres d'une équipe (`GET /api/admin/teams/{id}/users`)
+- Retrait d'un membre (`DELETE /api/admin/teams/{teamId}/users/{userId}`)
+- Affectation en bloc des membres (`POST /api/admin/teams/{teamId}/members`)
+- Suppression d'une équipe (`DELETE /api/admin/teams/{id}`)
+
+### 4. `04_admin_projects_tests.ps1` (Projets & Membres)
+- Consultation des projets (`GET /api/projects`)
+- Création d'un projet (`POST /api/projects`)
+- Assignation d'un collaborateur au projet (`POST /api/admin/projects/{projectId}/users/{userId}`)
+- Consultation des membres affectés (`GET /api/admin/projects/{projectId}/members`)
+- Retrait d'un membre (`DELETE /api/admin/projects/{projectId}/users/{userId}`)
+- Affectation en bloc des membres d'un projet (`POST /api/admin/projects/{projectId}/members`)
+
+### 5. `05_tasks_tests.ps1` (Tâches)
+- Création d'une tâche avec assignation (`POST /api/tasks`)
+- Liste de toutes les tâches (`GET /api/tasks`)
+- Consultation par ID (`GET /api/tasks/{id}`)
+- Transition de statut : `A_FAIRE` ➡️ `EN_COURS` ➡️ `TERMINE` (`PATCH /api/tasks/{id}/status`)
+- Suppression de la tâche avec détachement sécurisé (`DELETE /api/tasks/{id}`)
+
+### 6. `06_notifications_tests.ps1` (Notifications)
+- Protection d'accès aux notifications (403 sans token)
+- Consultation de l'historique des notifications (`GET /api/notifications`)
+- Marquage d'une notification comme lue (`PATCH /api/notifications/{id}/read`)

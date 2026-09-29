@@ -43,14 +43,14 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
                 String username = jwtService.extractUsername(token);
                 if (username != null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    if (jwtService.isTokenValid(token, userDetails)) {
+                    if (jwtService.isTokenValid(token, userDetails) && userDetails.isEnabled()) {
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         accessor.setUser(authentication);
                         log.info("Authentification WebSocket réussie pour l'utilisateur : {}", username);
                     } else {
-                        log.error("Token JWT invalide ou expiré pour l'utilisateur : {}", username);
-                        throw new AccessDeniedException("Token JWT invalide ou expiré");
+                        log.error("Token JWT invalide, expiré ou compte utilisateur désactivé pour : {}", username);
+                        throw new AccessDeniedException("Compte désactivé ou token JWT invalide/expiré");
                     }
                 }
             } catch (Exception e) {

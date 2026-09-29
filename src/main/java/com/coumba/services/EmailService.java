@@ -20,10 +20,6 @@ public class EmailService {
 
     /**
      * Envoi d'un email asynchrone lors de l'assignation d'une tâche.
-     *
-     * @param to          Adresse email du destinataire
-     * @param taskTitle   Titre de la tâche assignée
-     * @param assignedBy  Nom de l'utilisateur qui a assigné la tâche
      */
     @Async
     public void sendTaskAssignmentEmail(String to, String taskTitle, String assignedBy) {
@@ -53,11 +49,6 @@ public class EmailService {
 
     /**
      * Envoi d'un email asynchrone lors du changement de statut d'une tâche.
-     *
-     * @param to        Adresse email du destinataire (ex: créateur)
-     * @param taskTitle Titre de la tâche
-     * @param newStatus Nouveau statut de la tâche
-     * @param updatedBy Nom de l'utilisateur ayant mis à jour la tâche
      */
     @Async
     public void sendTaskStatusUpdateEmail(String to, String taskTitle, String newStatus, String updatedBy) {
@@ -81,6 +72,67 @@ public class EmailService {
             log.info("Email de mise à jour envoyé avec succès à : {}", to);
         } catch (Exception e) {
             log.error("Erreur lors de l'envoi de l'email de mise à jour à {} : {}", to, e.getMessage());
+        }
+    }
+
+    /**
+     * Envoi d'un email d'invitation avec mot de passe temporaire généré de façon sécurisée.
+     */
+    @Async
+    public void sendUserInvitationEmail(String to, String temporaryPassword, String invitedBy) {
+        log.info("Envoi d'un email d'invitation à : {} par l'administrateur : {}", to, invitedBy);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Bienvenue sur TaskManager - Vos accès de connexion");
+            message.setText(String.format(
+                    "Bonjour,\n\n" +
+                    "Vous avez été invité sur la plateforme TaskManager par le responsable %s.\n\n" +
+                    "Voici vos identifiants temporaires de connexion :\n" +
+                    "- Identifiant (Email) : %s\n" +
+                    "- Mot de passe temporaire : %s\n\n" +
+                    "CONSIGNE DE SÉCURITÉ :\n" +
+                    "Pour la sécurité de votre compte, veuillez modifier ce mot de passe temporaire dès votre première connexion.\n\n" +
+                    "Cordialement,\n" +
+                    "L'équipe TaskManager",
+                    invitedBy, to, temporaryPassword
+            ));
+
+            mailSender.send(message);
+            log.info("Email d'invitation envoyé avec succès à : {}", to);
+        } catch (Exception e) {
+            log.error("Erreur lors de l'envoi de l'email d'invitation à {} : {}", to, e.getMessage());
+        }
+    }
+
+    /**
+     * Envoi d'un email d'information lors du changement de statut d'un compte (activé / désactivé).
+     */
+    @Async
+    public void sendAccountStatusChangeEmail(String to, boolean isActive, String updatedBy) {
+        log.info("Envoi d'un email de notification de statut à : {} (Actif : {})", to, isActive);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            String statusText = isActive ? "réactivé" : "désactivé";
+            message.setSubject("Information importante - Votre compte TaskManager a été " + statusText);
+            message.setText(String.format(
+                    "Bonjour,\n\n" +
+                    "Votre compte sur la plateforme TaskManager a été %s par l'administrateur %s.\n\n" +
+                    (isActive
+                        ? "Vous pouvez désormais vous reconnecter normalement à vos projets et équipes."
+                        : "Votre accès est suspendu. Pour toute question, veuillez vous rapprocher de votre responsable d'équipe.") +
+                    "\n\nCordialement,\n" +
+                    "L'équipe TaskManager",
+                    statusText, updatedBy
+            ));
+
+            mailSender.send(message);
+            log.info("Email de changement de statut envoyé avec succès à : {}", to);
+        } catch (Exception e) {
+            log.error("Erreur lors de l'envoi de l'email de statut à {} : {}", to, e.getMessage());
         }
     }
 }
