@@ -1,6 +1,6 @@
 package com.coumba.security;
 
-import com.coumba.entities.User;
+import com.coumba.entities.user.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

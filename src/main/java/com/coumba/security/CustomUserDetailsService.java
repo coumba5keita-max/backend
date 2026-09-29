@@ -1,7 +1,7 @@
 package com.coumba.security;
 
-import com.coumba.entities.User;
-import com.coumba.repositories.UserRepository;
+import com.coumba.entities.user.User;
+import com.coumba.repositories.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

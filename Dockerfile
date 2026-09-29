@@ -8,8 +8,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Compilation avec gestion des retries réseau Maven pour éviter les coupures de téléchargement
-RUN mvn clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=5 -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false
+# Compilation avec cache Maven persistant
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=5 -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false
 
 # ==========================================
 # Étape 2 : Image d'exécution allégée (Alpine JRE)
