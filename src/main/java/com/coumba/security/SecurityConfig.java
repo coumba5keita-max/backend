@@ -48,8 +48,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Notifications sécurisées pour ROLE_USER et ROLE_ADMIN
                         .requestMatchers("/api/notifications/**").hasAnyRole("USER", "ADMIN")
-                        // Tâches et catégories protégées
-                        .requestMatchers("/api/tasks/**", "/api/categories/**").hasAnyRole("USER", "ADMIN")
+                        // Tâches, catégories, profil collaborateur et pièces jointes protégés
+                        .requestMatchers("/api/tasks/**", "/api/categories/**", "/api/user/**", "/api/attachments/**").hasAnyRole("USER", "ADMIN")
                         // Toute autre requête authentifiée
                         .anyRequest().authenticated()
                 )

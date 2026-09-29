@@ -142,6 +142,51 @@ public class NotificationService {
     }
 
     /**
+     * Envoie une notification lors de l'ajout d'un commentaire sur une tâche.
+     */
+    @Transactional
+    public void notifyTaskComment(User recipient, Task task, String authorName, String commentPreview) {
+        String truncated = commentPreview.length() > 60 ? commentPreview.substring(0, 57) + "..." : commentPreview;
+        String message = String.format("Nouveau commentaire de %s sur \"%s\" : \"%s\"", authorName, task.getTitle(), truncated);
+
+        Notification notification = Notification.builder()
+                .message(message)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .user(recipient)
+                .task(task)
+                .build();
+        Notification saved = notificationRepository.save(notification);
+
+        NotificationDTO dto = NotificationDTO.fromEntity(saved);
+        String destination = "/topic/user/" + recipient.getId() + "/notifications";
+        messagingTemplate.convertAndSend(destination, dto);
+        log.info("Notification de commentaire envoyée sur {} : {}", destination, message);
+    }
+
+    /**
+     * Envoie une notification lors de l'ajout d'une pièce jointe / capture d'écran sur une tâche.
+     */
+    @Transactional
+    public void notifyTaskAttachment(User recipient, Task task, String uploaderName, String fileName) {
+        String message = String.format("%s a ajouté la pièce jointe \"%s\" sur la tâche \"%s\".", uploaderName, fileName, task.getTitle());
+
+        Notification notification = Notification.builder()
+                .message(message)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .user(recipient)
+                .task(task)
+                .build();
+        Notification saved = notificationRepository.save(notification);
+
+        NotificationDTO dto = NotificationDTO.fromEntity(saved);
+        String destination = "/topic/user/" + recipient.getId() + "/notifications";
+        messagingTemplate.convertAndSend(destination, dto);
+        log.info("Notification de pièce jointe envoyée sur {} : {}", destination, message);
+    }
+
+    /**
      * Récupère l'historique des notifications pour un utilisateur donné.
      */
     @Transactional(readOnly = true)

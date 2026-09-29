@@ -18,11 +18,13 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Bonnes pratiques de sécurité : exécuter avec un utilisateur non-root
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
+RUN addgroup -S spring && adduser -S spring -G spring \
+    && mkdir -p /app/uploads/attachments \
+    && chown -R spring:spring /app
 
 # Récupération de l'artefact généré depuis le conteneur de build
-COPY --from=build /app/target/*.jar app.jar
+COPY --chown=spring:spring --from=build /app/target/*.jar app.jar
+USER spring:spring
 
 EXPOSE 8080
 

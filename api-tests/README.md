@@ -20,6 +20,7 @@ Dans l'explorateur de fichiers Windows, faites simplement un **double-clic** sur
 | `06_notifications_tests.bat` | **Notifications** : Consultation de l'historique et marquage comme lu |
 | `07_categories_priorities_tests.bat` | **Catégories & Priorités** : Configuration des catégories (Bug, Feature, Doc) et priorités (Haute, Moyenne, Basse) |
 | `08_admin_tasks_and_dashboard_tests.bat` | **Tâches Admin & Dashboard** : Attribution multiple, réaffectation, échéance, clôture, métriques et exports PDF/CSV |
+| `09_collaborator_user_tests.bat` | **Actions Collaborateur** : Profil, mot de passe, tâches assignées, avancement, saisie temps, commentaires, captures d'écran, notifications |
 
 > 💡 **Astuce** : La fenêtre reste ouverte à la fin de l'exécution pour vous laisser le temps de lire tranquillement les résultats.
 
@@ -41,6 +42,7 @@ Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
 .\06_notifications_tests.ps1
 .\07_categories_priorities_tests.ps1
 .\08_admin_tasks_and_dashboard_tests.ps1
+.\09_collaborator_user_tests.ps1
 ```
 
 ---
@@ -118,6 +120,20 @@ Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
 - Export de rapport d'activité au format **CSV** compatible Excel avec BOM UTF-8 (`GET /api/admin/reports/export/csv`)
 - Export de rapport d'activité au format **PDF** élégant paysage (`GET /api/admin/reports/export/pdf`)
 - Sécurité RBAC : Refus d'accès au dashboard et exports pour `ROLE_USER` (403 Forbidden)
+
+### 9. `09_collaborator_user_tests.ps1` (Actions du Collaborateur - ROLE_USER)
+- Consultation du profil personnel (`GET /api/user/profile`) avec projets, équipes et nombre de tâches
+- Mise à jour des informations personnelles prénom/nom (`PUT /api/user/profile`)
+- Changement sécurisé du mot de passe avec validation de l'ancien (`PUT /api/user/profile/password`)
+- Filtrage et recherche par mot-clé de ses tâches assignées (`GET /api/user/tasks?search=...`)
+- Changement d'avancement de ses tâches : `A_FAIRE` ➡️ `EN_COURS` ➡️ `TERMINE` (`PATCH /api/user/tasks/{id}/status`)
+- Sécurité : Interdiction pour le collaborateur de clôturer définitivement un ticket (403 Forbidden sur `CLOTURE`)
+- Estimation et saisie du temps passé / temps additionnel (`PATCH /api/user/tasks/{id}/time`)
+- Publication de commentaires pour demander une précision (`POST /api/tasks/{taskId}/comments`) avec notifications
+- Téléversement et consultation de captures d'écran et pièces jointes (`POST/GET /api/tasks/{taskId}/attachments`)
+- Téléchargement sécurisé des pièces jointes (`GET /api/attachments/{id}/download`)
+- Consultation et acquittement des notifications reçues (`GET/PATCH /api/notifications`)
+
 
 
 

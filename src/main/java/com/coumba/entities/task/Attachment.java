@@ -29,6 +29,9 @@ public class Attachment {
     @Column(name = "file_type")
     private String fileType;
 
+    @Column(name = "file_size")
+    private Long fileSize;
+
     @CreationTimestamp
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     private LocalDateTime uploadedAt;
