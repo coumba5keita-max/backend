@@ -149,7 +149,7 @@ public class TaskService {
 
         // Mise à jour de la tâche
         task.setStatus(newStatus);
-        if (newStatus == TaskStatus.TERMINE) {
+        if (newStatus == TaskStatus.TERMINE || newStatus == TaskStatus.CLOTURE) {
             task.setClosedAt(LocalDateTime.now());
         }
 

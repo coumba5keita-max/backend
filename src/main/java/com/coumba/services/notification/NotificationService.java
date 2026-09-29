@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,6 +83,61 @@ public class NotificationService {
         // 3. Envoi asynchrone d'un email de notification
         if (recipient.getEmail() != null && !recipient.getEmail().isBlank()) {
             emailService.sendTaskStatusUpdateEmail(recipient.getEmail(), task.getTitle(), newStatus.name(), updatedByName);
+        }
+    }
+
+    /**
+     * Envoie une notification lors du changement de date d'échéance d'une tâche.
+     */
+    @Transactional
+    public void notifyTaskDueDateChange(User recipient, Task task, LocalDate newDueDate, String adminName) {
+        String formattedDate = newDueDate != null ? newDueDate.toString() : "Non définie";
+        String message = String.format("L'échéance de la tâche \"%s\" a été modifiée au %s par %s.",
+                task.getTitle(), formattedDate, adminName);
+
+        Notification notification = Notification.builder()
+                .message(message)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .user(recipient)
+                .task(task)
+                .build();
+        Notification saved = notificationRepository.save(notification);
+
+        NotificationDTO dto = NotificationDTO.fromEntity(saved);
+        String destination = "/topic/user/" + recipient.getId() + "/notifications";
+        messagingTemplate.convertAndSend(destination, dto);
+        log.info("Notification d'échéance envoyée sur {} : {}", destination, message);
+
+        if (recipient.getEmail() != null && !recipient.getEmail().isBlank()) {
+            emailService.sendTaskDueDateChangeEmail(recipient.getEmail(), task.getTitle(), formattedDate, adminName);
+        }
+    }
+
+    /**
+     * Envoie une notification lors de la clôture définitive d'un ticket.
+     */
+    @Transactional
+    public void notifyTicketClosed(User recipient, Task task, String adminName, String note) {
+        String message = String.format("Le ticket \"%s\" a été définitivement clôturé par %s.",
+                task.getTitle(), adminName);
+
+        Notification notification = Notification.builder()
+                .message(message)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .user(recipient)
+                .task(task)
+                .build();
+        Notification saved = notificationRepository.save(notification);
+
+        NotificationDTO dto = NotificationDTO.fromEntity(saved);
+        String destination = "/topic/user/" + recipient.getId() + "/notifications";
+        messagingTemplate.convertAndSend(destination, dto);
+        log.info("Notification de clôture envoyée sur {} : {}", destination, message);
+
+        if (recipient.getEmail() != null && !recipient.getEmail().isBlank()) {
+            emailService.sendTicketClosedEmail(recipient.getEmail(), task.getTitle(), adminName, note);
         }
     }
 

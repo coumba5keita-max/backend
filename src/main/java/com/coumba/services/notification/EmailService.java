@@ -135,4 +135,60 @@ public class EmailService {
             log.error("Erreur lors de l'envoi de l'email de statut à {} : {}", to, e.getMessage());
         }
     }
+
+    /**
+     * Envoi d'un email asynchrone lors de la modification de la date d'échéance d'une tâche.
+     */
+    @Async
+    public void sendTaskDueDateChangeEmail(String to, String taskTitle, String newDueDate, String updatedBy) {
+        log.info("Préparation de l'envoi d'email de changement d'échéance à : {} pour la tâche : {}", to, taskTitle);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Mise à jour d'échéance pour la tâche : " + taskTitle);
+            message.setText(String.format(
+                    "Bonjour,\n\n" +
+                    "La date d'échéance de votre tâche \"%s\" a été modifiée par l'administrateur %s.\n\n" +
+                    "Nouvelle échéance : %s\n\n" +
+                    "Veuillez vous connecter à la plateforme pour organiser votre travail en conséquence.\n\n" +
+                    "Cordialement,\n" +
+                    "L'équipe TaskManager",
+                    taskTitle, updatedBy, newDueDate
+            ));
+
+            mailSender.send(message);
+            log.info("Email de changement d'échéance envoyé avec succès à : {}", to);
+        } catch (Exception e) {
+            log.error("Erreur lors de l'envoi de l'email de changement d'échéance à {} : {}", to, e.getMessage());
+        }
+    }
+
+    /**
+     * Envoi d'un email asynchrone lors de la clôture définitive d'un ticket.
+     */
+    @Async
+    public void sendTicketClosedEmail(String to, String taskTitle, String closedBy, String note) {
+        log.info("Préparation de l'envoi d'email de clôture de ticket à : {} pour la tâche : {}", to, taskTitle);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Ticket clôturé définitivement : " + taskTitle);
+            message.setText(String.format(
+                    "Bonjour,\n\n" +
+                    "Le ticket \"%s\" a été définitivement clôturé par l'administrateur %s.\n\n" +
+                    (note != null && !note.isBlank() ? "Note de clôture : " + note + "\n\n" : "") +
+                    "Ce ticket est désormais archivé au statut CLÔTURÉ.\n\n" +
+                    "Cordialement,\n" +
+                    "L'équipe TaskManager",
+                    taskTitle, closedBy
+            ));
+
+            mailSender.send(message);
+            log.info("Email de clôture envoyé avec succès à : {}", to);
+        } catch (Exception e) {
+            log.error("Erreur lors de l'envoi de l'email de clôture à {} : {}", to, e.getMessage());
+        }
+    }
 }

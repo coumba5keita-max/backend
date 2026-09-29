@@ -19,6 +19,7 @@ Dans l'explorateur de fichiers Windows, faites simplement un **double-clic** sur
 | `05_tasks_tests.bat` | **Gestion des Tâches** : Création, changement de statut, assignation et suppression |
 | `06_notifications_tests.bat` | **Notifications** : Consultation de l'historique et marquage comme lu |
 | `07_categories_priorities_tests.bat` | **Catégories & Priorités** : Configuration des catégories (Bug, Feature, Doc) et priorités (Haute, Moyenne, Basse) |
+| `08_admin_tasks_and_dashboard_tests.bat` | **Tâches Admin & Dashboard** : Attribution multiple, réaffectation, échéance, clôture, métriques et exports PDF/CSV |
 
 > 💡 **Astuce** : La fenêtre reste ouverte à la fin de l'exécution pour vous laisser le temps de lire tranquillement les résultats.
 
@@ -39,6 +40,7 @@ Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
 .\05_tasks_tests.ps1
 .\06_notifications_tests.ps1
 .\07_categories_priorities_tests.ps1
+.\08_admin_tasks_and_dashboard_tests.ps1
 ```
 
 ---
@@ -104,4 +106,18 @@ Ouvrez un terminal PowerShell dans le dossier `api-tests/` et exécutez :
 - Modification d'une catégorie existante (`PUT /api/admin/categories/{id}`)
 - Sécurité RBAC : Refus d'accès pour les utilisateurs réguliers (403 Forbidden)
 - Suppression d'une catégorie avec détachement sécurisé des tâches associées (`DELETE /api/admin/categories/{id}`)
+
+### 8. `08_admin_tasks_and_dashboard_tests.ps1` (Tâches, Dashboard & Reporting)
+- Attribution d'une tâche à un collaborateur spécifique (ex : Aboubacar) (`POST /api/admin/tasks`)
+- Attribution d'une tâche à plusieurs collaborateurs simultanés dont l'administrateur
+- Réaffectation d'une tâche d'un membre à un autre (`PUT /api/admin/tasks/{id}/reassign`) avec notification temps réel
+- Modification de la date d'échéance (Due date) (`PATCH /api/admin/tasks/{id}/due-date`) avec notification
+- Clôture définitive d'un ticket (`PATCH /api/admin/tasks/{id}/close`) avec horodatage et note de résolution
+- Filtrage des tâches clôturées (`GET /api/admin/tasks?status=CLOTURE`)
+- Consultation des métriques globales du dashboard (`GET /api/admin/dashboard/metrics`) : total tâches, clôturées, retards, taux d'achèvement et charge de travail (%) par collaborateur
+- Export de rapport d'activité au format **CSV** compatible Excel avec BOM UTF-8 (`GET /api/admin/reports/export/csv`)
+- Export de rapport d'activité au format **PDF** élégant paysage (`GET /api/admin/reports/export/pdf`)
+- Sécurité RBAC : Refus d'accès au dashboard et exports pour `ROLE_USER` (403 Forbidden)
+
+
 
