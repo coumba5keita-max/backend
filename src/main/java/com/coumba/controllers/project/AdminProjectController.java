@@ -79,11 +79,22 @@ public class AdminProjectController {
     @PatchMapping("/{id}/archive")
     public ResponseEntity<ProjectResponseDTO> archiveProject(
             @PathVariable Long id,
-            @Valid @RequestBody ArchiveProjectRequest request,
+            @RequestBody(required = false) ArchiveProjectRequest request,
+            @RequestParam(required = false) Boolean isArchived,
+            @RequestParam(required = false) Boolean archive,
             Authentication authentication
     ) {
         String adminEmail = authentication != null ? authentication.getName() : "ADMIN";
-        ProjectResponseDTO updated = adminProjectService.archiveProject(id, request.getIsArchived(), adminEmail);
+        Boolean targetStatus = null;
+        if (request != null && request.getIsArchived() != null) {
+            targetStatus = request.getIsArchived();
+        } else if (isArchived != null) {
+            targetStatus = isArchived;
+        } else if (archive != null) {
+            targetStatus = archive;
+        }
+
+        ProjectResponseDTO updated = adminProjectService.archiveProject(id, targetStatus, adminEmail);
         return ResponseEntity.ok(updated);
     }
 

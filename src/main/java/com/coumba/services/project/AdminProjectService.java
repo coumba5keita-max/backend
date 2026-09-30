@@ -3,6 +3,7 @@ package com.coumba.services.project;
 import com.coumba.dto.project.ProjectRequest;
 import com.coumba.dto.project.ProjectResponseDTO;
 import com.coumba.dto.user.UserResponseDTO;
+import com.coumba.entities.enums.Role;
 import com.coumba.entities.project.Project;
 import com.coumba.entities.task.Task;
 import com.coumba.entities.user.User;
@@ -84,19 +85,40 @@ public class AdminProjectService {
      * Archive ou désarchive un projet.
      */
     @Transactional
-    public ProjectResponseDTO archiveProject(Long projectId, boolean isArchived, String adminEmail) {
-        log.info("AUDIT : L'administrateur [{}] modifie l'état d'archivage du projet ID [{}] vers [{}]",
-                adminEmail, projectId, isArchived);
-
+    public ProjectResponseDTO archiveProject(Long projectId, Boolean isArchived, String adminEmail) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
 
-        project.setIsArchived(isArchived);
+        boolean target = isArchived != null ? isArchived : (project.getIsArchived() == null || !project.getIsArchived());
+        log.info("AUDIT : L'administrateur [{}] modifie l'état d'archivage du projet ID [{}] vers [{}]",
+                adminEmail, projectId, target);
+
+        project.setIsArchived(target);
         Project saved = projectRepository.save(project);
 
-        String action = isArchived ? "archivé" : "désarchivé";
+        String action = target ? "archivé" : "désarchivé";
         log.info("AUDIT SUCCÈS : Projet ID [{}] {} par [{}]", saved.getId(), action, adminEmail);
         return ProjectResponseDTO.fromEntity(saved);
+    }
+
+    /**
+     * Récupère les projets auxquels l'utilisateur connecté est assigné (ou tous les projets actifs pour un admin).
+     */
+    @Transactional(readOnly = true)
+    public List<ProjectResponseDTO> getUserProjects(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("Utilisateur introuvable avec l'email: " + userEmail));
+
+        if (user.getRole() == Role.ROLE_ADMIN) {
+            return projectRepository.findByIsArchived(false).stream()
+                    .map(ProjectResponseDTO::fromEntity)
+                    .collect(Collectors.toList());
+        }
+
+        return user.getProjects().stream()
+                .filter(p -> p.getIsArchived() == null || !p.getIsArchived())
+                .map(ProjectResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     /**
