@@ -115,7 +115,12 @@ public class AdminProjectService {
                     .collect(Collectors.toList());
         }
 
-        return user.getProjects().stream()
+        Set<Project> assignedProjects = new HashSet<>(projectRepository.findByUserId(user.getId()));
+        if (user.getProjects() != null) {
+            assignedProjects.addAll(user.getProjects());
+        }
+
+        return assignedProjects.stream()
                 .filter(p -> p.getIsArchived() == null || !p.getIsArchived())
                 .map(ProjectResponseDTO::fromEntity)
                 .collect(Collectors.toList());

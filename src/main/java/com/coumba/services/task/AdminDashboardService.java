@@ -92,7 +92,7 @@ public class AdminDashboardService {
 
         for (User user : allUsers) {
             List<Task> userTasks = allTasks.stream()
-                    .filter(t -> t.getAssignees() != null && t.getAssignees().contains(user))
+                    .filter(t -> t.getAssignees() != null && t.getAssignees().stream().anyMatch(a -> a.getId().equals(user.getId())))
                     .toList();
 
             long assignedCount = userTasks.size();

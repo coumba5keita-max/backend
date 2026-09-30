@@ -36,6 +36,7 @@ public class TaskResponseDTO {
     private Long creatorId;
     private String creatorName;
     private Set<Long> assigneeIds;
+    private Set<String> assignedUserNames;
 
     public static TaskResponseDTO fromEntity(Task task) {
         return TaskResponseDTO.builder()
@@ -56,6 +57,7 @@ public class TaskResponseDTO {
                 .creatorId(task.getCreator() != null ? task.getCreator().getId() : null)
                 .creatorName(task.getCreator() != null ? task.getCreator().getFirstname() + " " + task.getCreator().getLastname() : null)
                 .assigneeIds(task.getAssignees() != null ? task.getAssignees().stream().map(User::getId).collect(Collectors.toSet()) : Set.of())
+                .assignedUserNames(task.getAssignees() != null ? task.getAssignees().stream().map(u -> u.getFirstname() + " " + u.getLastname()).collect(Collectors.toSet()) : Set.of())
                 .build();
     }
 }
