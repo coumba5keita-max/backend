@@ -1,6 +1,6 @@
-# 🌟 Bienvenue sur le Backend TaskManager !
+# Bienvenue sur le Backend TaskManager !
 
-Salut collègue ! 👋  
+Salut collègue coumba ! 
 Bienvenue dans l'équipe et sur le projet **TaskManager**. Ce dépôt contient l'API backend complète conçue avec **Spring Boot 3 (Java 17)** et **PostgreSQL 16**.
 
 Ce guide a été rédigé spécialement pour toi. En quelques étapes simples, tu vas pouvoir installer les outils, démarrer tout l'environnement sans prise de tête grâce à Docker, et exécuter la suite de tests automatisés pour vérifier que tout tourne comme une horloge sur ta machine.
@@ -9,7 +9,7 @@ Installe-toi confortablement avec un café ☕, et suis le guide !
 
 ---
 
-## 📋 Table des matières
+## Table des matières
 
 1. [Prérequis](#-1-prérequis)
 2. [Télécharger et installer Docker](#-2-télécharger-et-installer-docker)
@@ -21,35 +21,35 @@ Installe-toi confortablement avec un café ☕, et suis le guide !
 
 ---
 
-## 💻 1. Prérequis
+## 1. Prérequis
 
 Pour travailler sereinement, tu as simplement besoin de :
 - Un système d'exploitation moderne (**Windows 10/11**, macOS ou Linux).
 - **Git** installé pour cloner le projet.
 - **Docker Desktop** (on t'explique comment l'obtenir juste en dessous).
 
-> 💡 **Bonne nouvelle :** Tu n'as même pas besoin d'installer Java, Maven ou PostgreSQL sur ta machine ! Docker se charge d'encapsuler tout le système pour toi.
+> **Bonne nouvelle :** Tu n'as même pas besoin d'installer Java, Maven ou PostgreSQL sur ta machine ! Docker se charge d'encapsuler tout le système pour toi.
 
 ---
 
-## 🐳 2. Télécharger et installer Docker
+## 2. Télécharger et installer Docker
 
 Docker permet de lancer en une seule commande la base de données PostgreSQL et l'application Spring Boot dans des conteneurs isolés et prêts à l'emploi.
 
-### 📥 Téléchargement
+### Téléchargement
 
 1. Rends-toi sur le site officiel de Docker :
-   👉 **[Télécharger Docker Desktop pour Windows / Mac / Linux](https://www.docker.com/products/docker-desktop/)**
+   **[Télécharger Docker Desktop pour Windows / Mac / Linux](https://www.docker.com/products/docker-desktop/)**
 2. Clique sur le bouton correspondant à ton système (ex: **Docker Desktop for Windows**).
 3. Lance l'installateur téléchargé (`Docker Desktop Installer.exe`).
 
-### ⚙️ Conseils d'installation (Spécial Windows)
+### Conseils d'installation (Spécial Windows)
 - Durant l'installation, assure-toi que l'option **"Use WSL 2 instead of Hyper-V"** est bien cochée (recommandé pour de meilleures performances).
 - Une fois l'installation terminée, redémarre ton ordinateur si l'installateur te le demande.
 - Lance **Docker Desktop** depuis le menu Démarrer.
 - Attends quelques instants jusqu'à ce que la petite icône de baleine en bas à gauche de la fenêtre Docker Desktop devienne verte avec la mention **"Engine running"**.
 
-### ✅ Vérifier que Docker fonctionne
+### Vérifier que Docker fonctionne
 Ouvre ton terminal favori (PowerShell, Invite de commandes ou Terminal) et tape :
 
 ```bash
@@ -61,7 +61,7 @@ Si ces commandes affichent les numéros de version, bravo, Docker est fin prêt 
 
 ---
 
-## 🚀 3. Démarrer l'application avec Docker
+## 3. Démarrer l'application avec Docker
 
 Tu es maintenant prêt à lancer le projet. Rien de plus facile !
 
@@ -78,7 +78,7 @@ cd c:\developpement\backend
 docker compose up --build -d
 ```
 
-### 🧐 Que fait cette commande ?
+### Que fait cette commande ?
 - `--build` : Compile le code Java et fabrique l'image de l'application Spring Boot.
 - `-d` (*detached mode*) : Lance les conteneurs en arrière-plan pour ne pas bloquer ton terminal.
 - Démarre automatiquement deux conteneurs reliés entre eux :
@@ -107,13 +107,13 @@ L'API est désormais disponible sur : **`http://localhost:8080`** 🎯
 
 ---
 
-## 🧪 4. Lancer les tests de l'API
+## 4. Lancer les tests de l'API
 
 Pour te simplifier la vie au maximum et t'éviter d'avoir à importer et configurer des dizaines de requêtes dans Postman, une suite complète de tests prêts à l'emploi est incluse dans le dossier `api-tests/`.
 
 Deux options s'offrent à toi :
 
-### 🖱️ Option A : En 1 Clic (Ultra simple sous Windows)
+### Option A : En 1 Clic (Ultra simple sous Windows)
 Ouvre ton explorateur de fichiers dans `backend\api-tests\` et **double-clique** simplement sur :
 - **`RUN_ALL_TESTS.bat`** : Exécute l'intégralité des 9 suites de test et affiche un beau résumé récapitulatif !
 
@@ -121,7 +121,7 @@ Tu peux aussi double-cliquer sur un fichier spécifique si tu veux tester une se
 
 ---
 
-### 💻 Option B : En ligne de commande (PowerShell)
+### Option B : En ligne de commande (PowerShell)
 Depuis la racine du projet ou depuis le dossier `api-tests/`, lance :
 
 ```powershell
@@ -142,11 +142,11 @@ Ou pour cibler un test précis :
 .\api-tests\09_collaborator_user_tests.ps1        # Espace Collaborateur (ROLE_USER)
 ```
 
-> 🎯 **Résultat attendu :** 100% des tests en vert avec le message `Validation réussie !`.
+> **Résultat attendu :** 100% des tests en vert avec le message `Validation réussie !`.
 
 ---
 
-## 🧑‍💻 5. Guide pratique du Collaborateur
+## 5. Guide pratique du Collaborateur
 
 En tant que collaborateur (`ROLE_USER`), voici comment fonctionne l'application pour toi au quotidien :
 
@@ -175,7 +175,7 @@ En tant que collaborateur (`ROLE_USER`), voici comment fonctionne l'application 
 
 ---
 
-## 🛠️ 6. Commandes utiles & Astuces du quotidien
+## 6. Commandes utiles & Astuces du quotidien
 
 | Action voulue | Commande à exécuter |
 | :--- | :--- |
@@ -190,7 +190,7 @@ En tant que collaborateur (`ROLE_USER`), voici comment fonctionne l'application 
 
 ---
 
-## 🚑 7. Dépannage fréquent
+## 7. Dépannage fréquent
 
 ### Le port 8080 est déjà utilisé ?
 Si une autre application (ex: un Tomcat local ou un autre service) tourne déjà sur le port 8080 :
@@ -207,7 +207,6 @@ Si une autre application (ex: un Tomcat local ou un autre service) tourne déjà
 
 ---
 
-## 🤝 Besoin d'aide ?
+## Besoin d'aide ?
 
 Tu bloques sur quelque chose ou tu as une suggestion d'amélioration ? N'hésite pas à échanger avec l'équipe !  
-Bon code et bienvenue dans le projet ! 🚀
